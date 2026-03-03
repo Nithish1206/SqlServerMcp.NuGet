@@ -13,17 +13,18 @@ builder.Logging.AddConsole(options =>
     options.LogToStandardErrorThreshold = LogLevel.Trace;
 });
 
-// Load appsettings.json
+// Load appsettings.json (optional — config can come from environment variables instead)
 builder.Configuration
     .SetBasePath(AppContext.BaseDirectory)
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
 // Load the section "ConnectionStrings" into a dictionary
 var connections = builder.Configuration.GetSection("ConnectionStrings")
     .Get<Dictionary<string, string>>() ?? new Dictionary<string, string>();
 
 if (connections.Count == 0)
-    throw new Exception("No connection strings found in appsettings.json");
+    throw new Exception("No connection strings found. Configure via environment variables (ConnectionStrings__Name=...) or appsettings.json.");
 
 // ✅ Register SqlTools as singleton
 var options = new SqlToolsOptions

@@ -14,23 +14,7 @@ dotnet tool install -g SqlServerMcp
 
 ## Configure
 
-After installing, edit the `appsettings.json` in the tool's install directory to add your connection strings:
-
-```jsonc
-{
-  "ConnectionStrings": {
-    "MyDb": "Server=localhost;Database=MyDatabase;Trusted_Connection=True;TrustServerCertificate=True;"
-  },
-  "Query": {
-    "DefaultTop": 1000,
-    "MaxTop": 500000
-  }
-}
-```
-
-> **Tip:** Run `dotnet tool list -g` to find the install path, then navigate to the tool folder to find `appsettings.json`.
-
-## Connect from an MCP Client
+Configuration is done entirely through **environment variables** in your MCP client config. No need to edit any files — just add your connection strings and query settings directly in the `env` block.
 
 Add the following to your MCP client configuration (e.g. Claude Desktop `claude_desktop_config.json`):
 
@@ -39,11 +23,40 @@ Add the following to your MCP client configuration (e.g. Claude Desktop `claude_
   "mcpServers": {
     "sqlserver": {
       "command": "sqlservermcp",
-      "args": []
+      "env": {
+        "ConnectionStrings__MyDb": "Server=localhost;Database=MyDatabase;Trusted_Connection=True;TrustServerCertificate=True;",
+        "Query__DefaultTop": "1000",
+        "Query__MaxTop": "500000"
+      }
     }
   }
 }
 ```
+
+### Environment Variable Format
+
+| Variable | Description |
+|----------|-------------|
+| `ConnectionStrings__<name>` | SQL Server connection string. Add multiple with different names. |
+| `Query__DefaultTop` | Default row limit for queries (default: `1000`) |
+| `Query__MaxTop` | Maximum allowed row limit (default: `500000`) |
+
+> **Note:** Use double underscores (`__`) as the separator — this is the .NET configuration convention for environment variables.
+
+### Multiple Databases
+
+You can configure multiple databases by adding multiple connection string variables:
+
+```json
+{
+  "env": {
+    "ConnectionStrings__Production": "Server=prod-server;Database=ProdDb;...",
+    "ConnectionStrings__Staging": "Server=staging-server;Database=StagingDb;..."
+  }
+}
+```
+
+Then use the `ListDatabases` tool to see available names, and pass the database name to any query tool.
 
 ## Available Tools
 
