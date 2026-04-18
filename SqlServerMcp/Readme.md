@@ -6,6 +6,8 @@
 
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for **SQL Server**. Exposes schema inspection, safe read-only queries, and query plan analysis as MCP tools.
 
+> **How it works:** This server does not accept natural-language questions. Instead, the connected **AI tool (the MCP client) decides and generates the SQL query** based on the user's intent and the schema it inspects via the tools below. The server only executes the SQL the AI produces, under the safety rules described in [Safety](#safety).
+
 ## Install
 
 ```bash
