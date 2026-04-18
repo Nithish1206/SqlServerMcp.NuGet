@@ -72,6 +72,35 @@ Then use the `ListDatabases` tool to see available names, and pass the database 
 | `RunQuery` | Execute a safe read-only SELECT query with auto row-limiting |
 | `ExplainQuery` | Explain a SELECT query using estimated execution plan |
 
+## Example
+
+**Prompt:**
+
+> *"Using the `MyDb` database, show me the top 5 customers by total order amount in 2025."*
+
+**The AI generates and executes the query** by calling `SearchSchema` / `DescribeTable` to discover the tables, then passing this SQL to `RunQuery`:
+
+```sql
+SELECT TOP 5 c.CustomerId, c.Name, SUM(o.TotalAmount) AS TotalSpent
+FROM dbo.Customers c
+JOIN dbo.Orders o ON o.CustomerId = c.CustomerId
+WHERE YEAR(o.OrderDate) = 2025
+GROUP BY c.CustomerId, c.Name
+ORDER BY TotalSpent DESC;
+```
+
+**Expected output:**
+
+| CustomerId | Name        | TotalSpent |
+|-----------:|-------------|-----------:|
+| 1042       | Acme Corp   | 184500.00  |
+| 778        | Globex Ltd  | 162300.50  |
+| 2310       | Initech     | 149875.25  |
+| 915        | Soylent Inc | 138420.00  |
+| 604        | Umbrella Co | 121990.75  |
+
+> **Disclaimer:** The accuracy of the generated SQL and the final output depends on the AI model you select in your MCP client. More capable models produce more reliable queries; weaker models may misinterpret the schema or the intent of the prompt.
+
 ## Safety
 
 - Only `SELECT` queries are allowed — all write operations are blocked
