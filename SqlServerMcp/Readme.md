@@ -1,4 +1,4 @@
-<!-- mcp-name: SQL Server MCP -->
+<!-- mcp-name: io.github.Nithish1206/SqlServerMcp -->
 <!-- mcp-description: MCP server for SQL Server — schema inspection, safe read-only queries, and query plan analysis -->
 <!-- mcp-tags: sql-server, mcp, database, dotnet-tool -->
 

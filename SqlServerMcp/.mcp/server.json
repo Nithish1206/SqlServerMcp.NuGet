@@ -1,18 +1,60 @@
 {
-  "name": "SQL Server MCP",
-  "description": "MCP server for SQL Server — schema inspection, safe read-only queries, and query plan analysis",
-  "version": "1.0.0",
-  "transport": {
-    "type": "stdio",
-    "command": "sqlservermcp",
-    "args": []
-  },
-  "install": {
-    "dotnet": {
-      "command": "dotnet tool install -g SqlServerMcp"
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.Nithish1206/SqlServerMcp",
+  "description": "MCP server for SQL Server: schema inspection, safe read-only queries, query plan analysis",
+  "version": "1.0.6",
+  "websiteUrl": "https://github.com/Nithish1206/SqlServerMcp.NuGet",
+  "packages": [
+    {
+      "registryType": "nuget",
+      "registryBaseUrl": "https://api.nuget.org",
+      "identifier": "SqlServerMcp",
+      "version": "1.0.6",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [],
+      "environmentVariables": [
+        {
+          "name": "ConnectionStrings__MyDb",
+          "value": "{connection_string}",
+          "variables": {
+            "connection_string": {
+              "description": "SQL Server connection string, e.g. Server=localhost;Database=MyDatabase;Trusted_Connection=True;TrustServerCertificate=True;",
+              "isRequired": true,
+              "isSecret": true
+            }
+          }
+        },
+        {
+          "name": "Query__DefaultTop",
+          "value": "{default_top}",
+          "variables": {
+            "default_top": {
+              "description": "Default row limit applied to queries",
+              "isRequired": false,
+              "isSecret": false,
+              "default": "1000"
+            }
+          }
+        },
+        {
+          "name": "Query__MaxTop",
+          "value": "{max_top}",
+          "variables": {
+            "max_top": {
+              "description": "Maximum allowed row limit",
+              "isRequired": false,
+              "isSecret": false,
+              "default": "500000"
+            }
+          }
+        }
+      ]
     }
-  },
-  "tags": ["sql-server", "database", "mcp", "dotnet-tool"],
-  "license": "MIT",
-  "repository": "https://github.com/NithishSakthivel/SqlServerMcp"
+  ],
+  "repository": {
+    "url": "https://github.com/Nithish1206/SqlServerMcp.NuGet",
+    "source": "github"
+  }
 }

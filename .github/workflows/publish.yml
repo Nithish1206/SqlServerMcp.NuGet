@@ -1,0 +1,75 @@
+name: Publish to NuGet and MCP Registry
+
+# Triggers when you push a version tag, e.g.  git tag v1.0.6 && git push origin v1.0.6
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # required for NuGet Trusted Publishing AND MCP Registry OIDC
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Derive version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # --- Build & publish the NuGet package -------------------------------
+
+      - name: Pack
+        run: dotnet pack SqlServerMcp/SqlServerMcp.csproj -c Release -p:Version=${{ steps.version.outputs.version }}
+
+      - name: NuGet trusted publishing login (OIDC -> short-lived API key)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: ${{ vars.NUGET_USER }}   # set a repo variable NUGET_USER = your nuget.org username
+
+      - name: Push to NuGet.org
+        run: >
+          dotnet nuget push SqlServerMcp/bin/Release/*.nupkg
+          --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      # --- Wait for NuGet validation (registry verifies the README) --------
+
+      - name: Wait for package README to be live on NuGet.org
+        run: |
+          ID="sqlservermcp"
+          VERSION="${{ steps.version.outputs.version }}"
+          URL="https://api.nuget.org/v3-flatcontainer/$ID/$VERSION/readme"
+          for i in $(seq 1 30); do
+            if curl -sf "$URL" > /dev/null; then echo "README live."; exit 0; fi
+            echo "Waiting for NuGet validation... ($i)"; sleep 10
+          done
+          echo "Timed out waiting for NuGet package to become available." >&2
+          exit 1
+
+      # --- Publish the server to the Official MCP Registry -----------------
+
+      - name: Install mcp-publisher
+        run: curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+
+      - name: Sync server.json version to the release
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' \
+            SqlServerMcp/.mcp/server.json > server.tmp && mv server.tmp SqlServerMcp/.mcp/server.json
+
+      - name: Authenticate to MCP Registry (GitHub OIDC, no secret)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish SqlServerMcp/.mcp/server.json

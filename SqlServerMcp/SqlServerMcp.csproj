@@ -11,9 +11,12 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>sqlservermcp</ToolCommandName>
 
+    <!-- MCP server discovery on NuGet.org + Official MCP Registry (keeps the DotnetTool type too) -->
+    <PackageType>McpServer;DotnetTool</PackageType>
+
     <!-- NuGet Package Metadata -->
     <PackageId>SqlServerMcp</PackageId>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Authors>Nithish</Authors>
     <Description>A Model Context Protocol (MCP) server for SQL Server. Exposes schema inspection, safe read-only queries, and query plan analysis as MCP tools. Install as a dotnet tool and connect from any MCP-compatible AI client.</Description>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -37,6 +40,7 @@
     </None>
     <None Include="Readme.md" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include=".mcp\server.json" Pack="true" PackagePath=".mcp\" />
   </ItemGroup>
 
 </Project>
